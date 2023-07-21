@@ -1,46 +1,59 @@
+
 # Meradia
 
-# Architect
+![flow.png](flow.png)
 
-![](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/458651bf-4985-49ce-b201-df053e88e20e/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220820%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220820T040322Z&X-Amz-Expires=86400&X-Amz-Signature=2f9c032149df5d3e9f3f71b83fa2aa4f5424a59a696034886cb4b94c34cd09a6&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22&x-id=GetObject)
+Link: https://merakilab-space.notion.site/Update-image-flow-c4d8b7ac4f4842049d7162621943db45?pvs=4
 
-## Test 
-## Name
-Choose a self-explaining name for your project.
+Để upload ảnh lên S3 storage bằng ReactJS và Golang, bạn có thể làm theo các bước sau:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### **Bước 1: Gọi Backend để lấy Presigned URL**
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- Trong frontend (ReactJS), gửi một yêu cầu HTTP tới backend (Golang) để lấy presigned URL. Đảm bảo rằng backend đã cấu hình và có quyền truy cập vào Amazon S3.
+- Backend sẽ nhận yêu cầu, sử dụng credential của nó để kết nối tới Amazon S3 và tạo một presigned URL. Presigned URL này sẽ được tạo với quyền truy cập cho việc upload (ACL) và có thời hạn.
+- Backend sẽ trả về presigned URL cho frontend.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+### **Bước 2: Tải ảnh lên S3 bằng Presigned URL**
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- Trong frontend, sử dụng presigned URL đã nhận được để tải ảnh lên S3. Bạn có thể sử dụng các thư viện như Axios hoặc Fetch để thực hiện yêu cầu HTTP POST tới presigned URL với ảnh dữ liệu đính kèm.
+- Khi yêu cầu này được gửi đi, ảnh sẽ được truyền từ frontend trực tiếp tới S3 thông qua presigned URL.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### **Bước 3: Xác nhận và lưu thông tin vào Backend**
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+- Sau khi quá trình upload hoàn thành, frontend có thể gửi một yêu cầu khác tới backend để thông báo rằng quá trình upload đã hoàn tất. Yêu cầu này có thể chứa thông tin về ảnh đã upload hoặc bất kỳ thông tin khác liên quan.
+- Backend có thể tiếp nhận yêu cầu này, xác nhận rằng quá trình upload đã hoàn thành và lưu thông tin về ảnh vào cơ sở dữ liệu hoặc bất kỳ hệ thống nào khác.
+- Sau khi lưu thông tin thành công, backend có thể trả về một liên kết (link) tới ảnh đã lưu, để frontend có thể truy cập và hiển thị ảnh.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Đây là một quy trình cơ bản để upload ảnh lên S3 storage sử dụng ReactJS và Golang. Tuy nhiên, cần lưu ý rằng cài đặt chi tiết của từng bước có thể thay đổi tùy thuộc vào yêu cầu và cấu hình của bạn.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+---
+# APIs:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### PreUpload:
+```curl
+curl --location 'localhost:8099/api/v1/media/pre-upload' \
+--header 'Content-Type: application/json' \
+--data '{
+    "media_type": "png"
+}'
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### Upload: BE test only
+```curl
+curl --location 'localhost:8099/api/v1/media/upload' \
+--form 'upload_url="http://noormatch.ap-south-1.linodeobjects.com/noormatch/dde11abc-6257-44cd-be02-ac03a64359cc/image/159f15ba-004a-4bd0-86b9-fccb60959e5b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=R53GYSC97373T37GXQZN%2F20230721%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20230721T085505Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host%3Bx-amz-acl&x-id=PutObject&X-Amz-Signature=71ca596f7f6679e5f59031f4ced3401ad3b9eb94d25400854f408b84e7acf8fe"' \
+--form 'file=@"/C:/Users/AlienWare/Downloads/3 copy 1.png"'
+```
 
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+### Pos upload:
+* get [name] from PreUpload api response
+```curl
+curl --location 'localhost:8099/api/v1/media/pos-upload' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "159f15ba-004a-4bd0-86b9-fccb60959e5b.png",
+    "media_type": "png",
+    "type_to_crop": "avatar"
+}'
+```
