@@ -56,20 +56,25 @@ Link: https://merakilab-space.notion.site/Update-image-flow-c4d8b7ac4f4842049d71
     ```
 
 #### 2. Upload: BE test only; FE will use presigned url to upload
+* get [PRESIGN_URL] from PreUpload api response
 ```curl
 curl --location 'localhost:8099/api/v1/media/upload' \
---form 'upload_url="http://noormatch.ap-south-1.linodeobjects.com/noormatch/dde11abc-6257-44cd-be02-ac03a64359cc/image/159f15ba-004a-4bd0-86b9-fccb60959e5b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=R53GYSC97373T37GXQZN%2F20230721%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20230721T085505Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host%3Bx-amz-acl&x-id=PutObject&X-Amz-Signature=71ca596f7f6679e5f59031f4ced3401ad3b9eb94d25400854f408b84e7acf8fe"' \
+--form 'upload_url="[PRESIGN_URL]"' \
 --form 'file=@"/C:/Users/AlienWare/Downloads/3 copy 1.png"'
 ```
 
 #### 3. Pos upload: Learn about imageproxy here: https://github.com/willnorris/imageproxy 
-* get [name] from PreUpload api response
+* get [FILE_NAME] from PreUpload api response
 ```curl
 curl --location 'localhost:8099/api/v1/media/pos-upload' \
 --header 'Content-Type: application/json' \
 --data '{
-    "name": "159f15ba-004a-4bd0-86b9-fccb60959e5b.png",
+    "name": "[FILE_NAME]",
     "media_type": "png",
     "type_to_crop": "avatar"
 }'
 ```
+
+#### Contact for support:
+- Merakilab
+- mail: pxthang97@gmail.com
