@@ -1,4 +1,3 @@
-
 # Meradia
 
 ![flow.png](flow.png)
@@ -38,7 +37,7 @@ Link: https://merakilab-space.notion.site/Update-image-flow-c4d8b7ac4f4842049d71
 
 ### Development 
   - Clone code to local: ``` https://gitlab.com/merakilab9/meradia.git```
-  - Add .env file: flow .env.example
+  - Add .env file: follow .env.example
   - Start development environment with Docker: ```make compose dev```
   - After started, services will be available at localhost with ports as below:
   ```Backend: 8099```
