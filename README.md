@@ -28,25 +28,41 @@ Link: https://merakilab-space.notion.site/Update-image-flow-c4d8b7ac4f4842049d71
 
 
 ---
-# APIs:
+# How to start source:
+- Make sure you have read the [flow](flow.png) and understand it. By now you should understand how presigned url works and how to upload image to S3. Also you should know about imageproxy https://github.com/willnorris/imageproxy  and how to use it.
+- Make sure you have the development environment matches with these notes below so we can mitigate any problems of version mismatch.
+  - OS: Should use Linux (latest Ubuntu or your choice of distro) if possible. Windows does not play well with Docker and some other techs we may use. If you still prefer to use Windows, so you may have to cope with problems by yourself later since we're assuming everything will be developed and run on Linux.
+  - Install Docker CE (latest) and docker-compose.
+  - Install git for manage source code.
+  - IDE of your choice, recommended Goland or VS Code.
 
-### PreUpload:
-```curl
-curl --location 'localhost:8099/api/v1/media/pre-upload' \
---header 'Content-Type: application/json' \
---data '{
-    "media_type": "png"
-}'
-```
+### Development 
+  - Clone code to local: ``` https://gitlab.com/merakilab9/meradia.git```
+  - Add .env file: flow .env.example
+  - Start development environment with Docker: ```make compose dev```
+  - After started, services will be available at localhost with ports as below:
+  ```Backend: 8099```
+  ```ImageProxy: 8022```
 
-### Upload: BE test only
+### Testing api:
+
+#### 1. PreUpload:
+    ```curl
+    curl --location 'localhost:8099/api/v1/media/pre-upload' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "media_type": "png"
+    }'
+    ```
+
+#### 2. Upload: BE test only; FE will use presigned url to upload
 ```curl
 curl --location 'localhost:8099/api/v1/media/upload' \
 --form 'upload_url="http://noormatch.ap-south-1.linodeobjects.com/noormatch/dde11abc-6257-44cd-be02-ac03a64359cc/image/159f15ba-004a-4bd0-86b9-fccb60959e5b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=R53GYSC97373T37GXQZN%2F20230721%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20230721T085505Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host%3Bx-amz-acl&x-id=PutObject&X-Amz-Signature=71ca596f7f6679e5f59031f4ced3401ad3b9eb94d25400854f408b84e7acf8fe"' \
 --form 'file=@"/C:/Users/AlienWare/Downloads/3 copy 1.png"'
 ```
 
-### Pos upload:
+#### 3. Pos upload: Learn about imageproxy here: https://github.com/willnorris/imageproxy 
 * get [name] from PreUpload api response
 ```curl
 curl --location 'localhost:8099/api/v1/media/pos-upload' \
