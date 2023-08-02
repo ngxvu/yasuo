@@ -17,7 +17,7 @@ type Service struct {
 // NewService creates a new Service instance with the provided MongoDB database instance.
 func NewService(db *mongo.Database) *Service {
 	s := &Service{
-		BaseApp: service.NewApp("yasou Service", "v1.0"),
+		BaseApp: service.NewApp("Yasou Service", "v1.0"),
 		db:      db, // Store the MongoDB database instance
 	}
 
