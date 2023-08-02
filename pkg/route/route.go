@@ -1,76 +1,39 @@
 package route
 
 import (
-	"context"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-contrib/pprof"
+	"go.mongodb.org/mongo-driver/mongo"
 
-	"gitlab.com/merakilab9/meracore/ginext"
-	"gitlab.com/merakilab9/meracore/logger"
 	"gitlab.com/merakilab9/meracore/service"
-
 	"gitlab.com/merakilab9/meradia/conf"
-	"gitlab.com/merakilab9/meradia/pkg/repo/pg"
-
-	handlerMeradia "gitlab.com/merakilab9/meradia/pkg/handler"
-	serviceMeradia "gitlab.com/merakilab9/meradia/pkg/service"
+	"gitlab.com/merakilab9/meradia/pkg/handler"
 )
 
 type Service struct {
 	*service.BaseApp
+	db *mongo.Database // Add a field to store the MongoDB database instance
 }
 
-func NewService() *Service {
-
+// NewService creates a new Service instance with the provided MongoDB database instance.
+func NewService(db *mongo.Database) *Service {
 	s := &Service{
-		service.NewApp("meradia Service", "v1.0"),
+		BaseApp: service.NewApp("yasou Service", "v1.0"),
+		db:      db, // Store the MongoDB database instance
 	}
-	db := s.GetDB()
 
 	if !conf.LoadEnv().DbDebugEnable {
-		db = db.Debug()
-	}
-	endpoint := aws.Endpoint{
-		PartitionID:   "aws",
-		URL:           conf.LoadEnv().AWSMediaDomain,
-		SigningRegion: conf.LoadEnv().AWSUpCloudRegion,
+		s.db = s.db.Client().Database(s.db.Name())
 	}
 
-	endpointResolver := aws.EndpointResolverFunc(
-		func(service, region string) (aws.Endpoint, error) {
-			return endpoint, nil
-		},
-	)
-
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(conf.LoadEnv().AWSUpCloudAccessKeyID, conf.LoadEnv().AWSUpCloudSecretKey, "")),
-		config.WithRegion(conf.LoadEnv().AWSUpCloudRegion),
-		config.WithEndpointResolver(endpointResolver),
-	)
-
-	if err != nil {
-		logger.WithCtx(context.Background(), "init server").Error(err.Error())
-	}
-
-	client := s3.NewFromConfig(cfg)
-
-	repoPG := pg.NewPGRepo(db)
-	storageService := serviceMeradia.NewS3Service(client, conf.LoadEnv().AWSBucket)
-	mediaService := serviceMeradia.NewMediaService(storageService, repoPG)
-	mediaHandle := handlerMeradia.NewMediaHandlers(mediaService)
-	migrateHandle := handlerMeradia.NewMigrationHandler(db)
+	// Create a new YasouHandler instance to handle HTTP requests for saving categories
+	yasouHandler := handler.NewYasouHandler(s.db)
 
 	pprof.Register(s.Router)
 
 	v1Api := s.Router.Group("/api/v1")
-	v1Api.POST("/media/pre-upload", ginext.WrapHandler(mediaHandle.PreUpload))
-	v1Api.POST("/media/pos-upload", ginext.WrapHandler(mediaHandle.PosUpload))
-	v1Api.POST("/media/upload", ginext.WrapHandler(mediaHandle.Upload))
 
-	v1Api.POST("/internal/migrate", migrateHandle.Migrate)
+	// Add the new API endpoint for saving categories
+	v1Api.POST("/shopee/category/save", yasouHandler.SaveCategoriesHandler)
 
 	return s
 }

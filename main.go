@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"gitlab.com/merakilab9/meradia/conf"
+	"gitlab.com/merakilab9/meradia/pkg/repo/mongodb"
 	"gitlab.com/merakilab9/meradia/pkg/route"
 	"gitlab.com/merakilab9/meradia/pkg/utils"
 	"os"
@@ -11,7 +12,7 @@ import (
 )
 
 const (
-	APPNAME = "meradia"
+	APPNAME = "Yasou"
 )
 
 func main() {
@@ -19,9 +20,17 @@ func main() {
 	logger.Init(APPNAME)
 	utils.LoadMessageError()
 
-	app := route.NewService()
+	err := mongodb.InitDatabase() // Initialize MongoDB connection
+	if err != nil {
+		logger.Tag("main").Error(err)
+		return
+	}
+	defer mongodb.GetDB().Client().Disconnect(context.Background()) // Close MongoDB connection
+
+	// Pass the MongoDB database instance to the NewService function
+	app := route.NewService(mongodb.GetDB())
 	ctx := context.Background()
-	err := app.Start(ctx)
+	err = app.Start(ctx)
 	if err != nil {
 		logger.Tag("main").Error(err)
 	}
