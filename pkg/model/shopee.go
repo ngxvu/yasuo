@@ -1,14 +1,12 @@
 package model
 
-type DataCatCrawled struct {
+type ShopeeCateData struct {
 	Data struct {
-		Data struct {
-			CategoryList []CategoryList
-		} `json:"category_list"`
+		CategoryList []Category `json:"category_list"`
 	} `json:"data"`
 }
 
-type CategoryList struct {
+type Category struct {
 	Catid       int           `json:"catid"`
 	ParentCatid int           `json:"parent_catid"`
 	Name        string        `json:"name"`

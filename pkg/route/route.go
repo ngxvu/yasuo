@@ -1,39 +1,50 @@
 package route
 
 import (
-	"github.com/gin-contrib/pprof"
+	"context"
+	"fmt"
+	"gitlab.com/merakilab9/meracore/ginext"
+	"gitlab.com/merakilab9/meracore/logger"
+
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"gitlab.com/merakilab9/meracore/service"
-	"gitlab.com/merakilab9/meradia/conf"
-	"gitlab.com/merakilab9/meradia/pkg/handler"
+
+	"gitlab.com/merakilab9/yasuo/conf"
+	yasuoHandler "gitlab.com/merakilab9/yasuo/pkg/handler"
+	"gitlab.com/merakilab9/yasuo/pkg/repo/mongodb"
+	yasuoService "gitlab.com/merakilab9/yasuo/pkg/service"
 )
 
 type Service struct {
 	*service.BaseApp
-	db *mongo.Database // Add a field to store the MongoDB database instance
 }
 
 // NewService creates a new Service instance with the provided MongoDB database instance.
-func NewService(db *mongo.Database) *Service {
+func NewService() *Service {
 	s := &Service{
-		BaseApp: service.NewApp("Yasou Service", "v1.0"),
-		db:      db, // Store the MongoDB database instance
+		BaseApp: service.NewApp("Yasuo Service", "v1.0"),
 	}
 
-	if !conf.LoadEnv().DbDebugEnable {
-		s.db = s.db.Client().Database(s.db.Name())
+	client, err := mongo.Connect(
+		context.Background(),
+		options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s", conf.LoadEnv().MongoDBHost, conf.LoadEnv().MongoDBPort)),
+	)
+	if err != nil {
+		logger.WithCtx(context.Background(), "connect mongodb failed").Error(err.Error())
 	}
 
-	// Create a new YasouHandler instance to handle HTTP requests for saving categories
-	yasouHandler := handler.NewYasouHandler(s.db)
+	db := client.Database(conf.LoadEnv().MongoDBName)
 
-	pprof.Register(s.Router)
+	cateRepo := mongodb.NewPGRepo(db)
+	cateService := yasuoService.NewCategoryService(cateRepo)
+	cateHandler := yasuoHandler.NewCategoryHandlers(cateService)
 
 	v1Api := s.Router.Group("/api/v1")
 
 	// Add the new API endpoint for saving categories
-	v1Api.POST("/shopee/category/save", yasouHandler.SaveCategoriesHandler)
+	v1Api.POST("/shopee/category/save", ginext.WrapHandler(cateHandler.SaveCate))
 
 	return s
 }
