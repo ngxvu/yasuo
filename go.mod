@@ -1,4 +1,4 @@
-module gitlab.com/merakilab9/meradia
+module gitlab.com/merakilab9/yasuo
 
 go 1.19
 
