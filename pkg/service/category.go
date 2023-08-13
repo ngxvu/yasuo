@@ -11,7 +11,7 @@ type CategoryService struct {
 }
 
 type CategoryInterface interface {
-	SaveCate(ctx context.Context, cats []model.Category) error
+	SaveCate(ctx context.Context, cats []model.CategoryList) error
 }
 
 func NewCategoryService(cateRepo mongodb.CategoryRepoInterface) CategoryInterface {
@@ -20,7 +20,7 @@ func NewCategoryService(cateRepo mongodb.CategoryRepoInterface) CategoryInterfac
 	}
 }
 
-func (s *CategoryService) SaveCate(ctx context.Context, cats []model.Category) error {
+func (s *CategoryService) SaveCate(ctx context.Context, cats []model.CategoryList) error {
 	if err := s.cateRepo.InsertAllCategories(ctx, cats); err != nil {
 		return err
 	}

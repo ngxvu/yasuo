@@ -17,6 +17,7 @@ func NewCategoryHandlers(service service.CategoryInterface) *CategoryHandlers {
 }
 
 func (h *CategoryHandlers) SaveCate(r *ginext.Request) (*ginext.Response, error) {
+
 	requestModel := model.ShopeeCateData{}
 	if err := r.GinCtx.ShouldBind(&requestModel); err != nil {
 		return nil, ginext.NewError(http.StatusBadRequest, utils.MessageError()[http.StatusBadRequest])

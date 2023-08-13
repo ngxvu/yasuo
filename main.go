@@ -19,7 +19,6 @@ func main() {
 	logger.Init(APPNAME)
 	utils.LoadMessageError()
 
-	// Pass the MongoDB database instance to the NewService function
 	app := route.NewService()
 	ctx := context.Background()
 	err := app.Start(ctx)

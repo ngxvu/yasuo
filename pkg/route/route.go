@@ -3,11 +3,13 @@ package route
 import (
 	"context"
 	"fmt"
+	"github.com/hibiken/asynq"
 	"gitlab.com/merakilab9/meracore/ginext"
 	"gitlab.com/merakilab9/meracore/logger"
-
+	"gitlab.com/merakilab9/yasuo/pkg/utils"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 
 	"gitlab.com/merakilab9/meracore/service"
 
@@ -34,17 +36,29 @@ func NewService() *Service {
 	if err != nil {
 		logger.WithCtx(context.Background(), "connect mongodb failed").Error(err.Error())
 	}
-
 	db := client.Database(conf.LoadEnv().MongoDBName)
-
 	cateRepo := mongodb.NewPGRepo(db)
 	cateService := yasuoService.NewCategoryService(cateRepo)
 	cateHandler := yasuoHandler.NewCategoryHandlers(cateService)
+	cateHandlersQueue := yasuoHandler.NewCategoryQueueHandlers(cateService)
 
 	v1Api := s.Router.Group("/api/v1")
 
 	// Add the new API endpoint for saving categories
 	v1Api.POST("/shopee/category/save", ginext.WrapHandler(cateHandler.SaveCate))
+
+	srv := asynq.NewServer(
+		asynq.RedisClientOpt{Addr: utils.RedisAddr},
+		asynq.Config{
+			// Specify how many concurrent workers to use
+			Concurrency: 10,
+		},
+	)
+	mux := asynq.NewServeMux()
+	mux.HandleFunc(utils.JsonCateDelivery, cateHandlersQueue.HandleJsonCateDeliveryTask)
+	if err := srv.Run(mux); err != nil {
+		log.Fatalf("could not run server: %v", err)
+	}
 
 	return s
 }

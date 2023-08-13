@@ -11,14 +11,14 @@ type CategoryRepo struct {
 }
 
 type CategoryRepoInterface interface {
-	InsertAllCategories(ctx context.Context, categories []model.Category) error
+	InsertAllCategories(ctx context.Context, categories []model.CategoryList) error
 }
 
 func NewPGRepo(db *mongo.Database) CategoryRepoInterface {
 	return &CategoryRepo{DB: db}
 }
 
-func (r *CategoryRepo) InsertAllCategories(ctx context.Context, categories []model.Category) error {
+func (r *CategoryRepo) InsertAllCategories(ctx context.Context, categories []model.CategoryList) error {
 	var data []interface{}
 	for _, cate := range categories {
 		data = append(data, cate)
