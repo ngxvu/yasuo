@@ -29,6 +29,16 @@ func NewService() *Service {
 		BaseApp: service.NewApp("Yasuo Service", "v1.0"),
 	}
 
+	srv := asynq.NewServer(
+		asynq.RedisClientOpt{Addr: utils.RedisAddr},
+		asynq.Config{
+			// Specify how many concurrent workers to use
+			Concurrency: 10,
+		},
+	)
+
+	mux := asynq.NewServeMux()
+
 	client, err := mongo.Connect(
 		context.Background(),
 		options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s", conf.LoadEnv().MongoDBHost, conf.LoadEnv().MongoDBPort)),
@@ -47,18 +57,13 @@ func NewService() *Service {
 	// Add the new API endpoint for saving categories
 	v1Api.POST("/shopee/category/save", ginext.WrapHandler(cateHandler.SaveCate))
 
-	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: utils.RedisAddr},
-		asynq.Config{
-			// Specify how many concurrent workers to use
-			Concurrency: 10,
-		},
-	)
-	mux := asynq.NewServeMux()
+	///=================== MssBroker ===================///
 	mux.HandleFunc(utils.JsonCateDelivery, cateHandlersQueue.HandleJsonCateDeliveryTask)
-	if err := srv.Run(mux); err != nil {
-		log.Fatalf("could not run server: %v", err)
-	}
+	go func() {
+		if err := srv.Run(mux); err != nil {
+			log.Fatalf("could not run server: %v", err)
+		}
+	}()
 
 	return s
 }
