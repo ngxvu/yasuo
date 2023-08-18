@@ -51,12 +51,6 @@ func NewService() *Service {
 	cateService := yasuoService.NewCategoryService(cateRepo)
 	cateHandler := yasuoHandler.NewCategoryHandlers(cateService)
 	cateHandlersQueue := yasuoHandler.NewCategoryQueueHandlers(cateService)
-
-	v1Api := s.Router.Group("/api/v1")
-
-	// Add the new API endpoint for saving categories
-	v1Api.POST("/shopee/category/save", ginext.WrapHandler(cateHandler.SaveCate))
-
 	///=================== MssBroker ===================///
 	mux.HandleFunc(utils.JsonCateDelivery, cateHandlersQueue.HandleJsonCateDeliveryTask)
 	go func() {
@@ -64,6 +58,12 @@ func NewService() *Service {
 			log.Fatalf("could not run server: %v", err)
 		}
 	}()
+
+	//=================== HTTPAPI ===================//
+	v1Api := s.Router.Group("/api/v1")
+
+	// Add the new API endpoint for saving categories
+	v1Api.POST("/shopee/category/save", ginext.WrapHandler(cateHandler.SaveCate))
 
 	return s
 }
