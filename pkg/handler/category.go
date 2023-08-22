@@ -29,3 +29,31 @@ func (h *CategoryHandlers) SaveCate(r *ginext.Request) (*ginext.Response, error)
 
 	return ginext.NewResponseData(http.StatusOK, requestModel), nil
 }
+
+func (h *CategoryHandlers) SaveShopsByCate(r *ginext.Request) (*ginext.Response, error) {
+
+	requestModel := model.DataShopCrawled{}
+	if err := r.GinCtx.ShouldBind(&requestModel); err != nil {
+		return nil, ginext.NewError(http.StatusBadRequest, utils.MessageError()[http.StatusBadRequest])
+	}
+
+	if err := h.service.SaveShopsByCate(r.GinCtx, requestModel); err != nil {
+		return nil, err
+	}
+
+	return ginext.NewResponseData(http.StatusOK, requestModel.Data), nil
+}
+
+func (h *CategoryHandlers) SaveShopsDetail(r *ginext.Request) (*ginext.Response, error) {
+
+	requestModel := model.DataInfoShopCrawled{}
+	if err := r.GinCtx.ShouldBind(&requestModel); err != nil {
+		return nil, ginext.NewError(http.StatusBadRequest, utils.MessageError()[http.StatusBadRequest])
+	}
+
+	if err := h.service.SaveShopsInfo(r.GinCtx, requestModel); err != nil {
+		return nil, err
+	}
+
+	return ginext.NewResponseData(http.StatusOK, requestModel.DataInfoShop), nil
+}

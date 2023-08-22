@@ -12,6 +12,8 @@ type CategoryService struct {
 
 type CategoryInterface interface {
 	SaveCate(ctx context.Context, cats []model.CategoryList) error
+	SaveShopsByCate(ctx context.Context, data model.DataShopCrawled) error
+	SaveShopsInfo(ctx context.Context, data model.DataInfoShopCrawled) error
 }
 
 func NewCategoryService(cateRepo mongodb.CategoryRepoInterface) CategoryInterface {
@@ -22,6 +24,20 @@ func NewCategoryService(cateRepo mongodb.CategoryRepoInterface) CategoryInterfac
 
 func (s *CategoryService) SaveCate(ctx context.Context, cats []model.CategoryList) error {
 	if err := s.cateRepo.InsertAllCategories(ctx, cats); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *CategoryService) SaveShopsByCate(ctx context.Context, data model.DataShopCrawled) error {
+	if err := s.cateRepo.InsertAllShopsByCate(ctx, data); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *CategoryService) SaveShopsInfo(ctx context.Context, data model.DataInfoShopCrawled) error {
+	if err := s.cateRepo.InsertAllShopsInfo(ctx, data); err != nil {
 		return err
 	}
 	return nil
