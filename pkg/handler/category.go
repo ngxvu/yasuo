@@ -46,7 +46,7 @@ func (h *CategoryHandlers) SaveShopsByCate(r *ginext.Request) (*ginext.Response,
 
 func (h *CategoryHandlers) SaveShopsDetail(r *ginext.Request) (*ginext.Response, error) {
 
-	requestModel := model.DataInfoShopCrawled{}
+	requestModel := model.DataInfoShopsCrawled{}
 	if err := r.GinCtx.ShouldBind(&requestModel); err != nil {
 		return nil, ginext.NewError(http.StatusBadRequest, utils.MessageError()[http.StatusBadRequest])
 	}
@@ -55,5 +55,5 @@ func (h *CategoryHandlers) SaveShopsDetail(r *ginext.Request) (*ginext.Response,
 		return nil, err
 	}
 
-	return ginext.NewResponseData(http.StatusOK, requestModel.DataInfoShop), nil
+	return ginext.NewResponseData(http.StatusOK, requestModel.DataInfoShops), nil
 }

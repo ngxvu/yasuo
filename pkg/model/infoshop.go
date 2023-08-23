@@ -1,12 +1,14 @@
 package model
 
-type DataInfoShopCrawled struct {
-	DataInfoShop []struct {
-		DataInfoShop DataInfoShop `json:"data"`
-	} `json:"data"`
+type DataInfoShopsCrawled struct {
+	DataInfoShops []DataInfoShop `json:"data"`
 }
 
 type DataInfoShop struct {
+	DataInfoShopDetails `json:"data"`
+}
+
+type DataInfoShopDetails struct {
 	Shopid         int    `json:"shopid"`
 	Userid         int    `json:"userid"`
 	LastActiveTime int    `json:"last_active_time"`

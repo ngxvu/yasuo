@@ -14,7 +14,8 @@ type CategoryRepo struct {
 type CategoryRepoInterface interface {
 	InsertAllCategories(ctx context.Context, categories []model.CategoryList) error
 	InsertAllShopsByCate(ctx context.Context, data model.DataShopCrawled) error
-	InsertAllShopsInfo(ctx context.Context, data model.DataInfoShopCrawled) error
+	InsertAllShopsInfo(ctx context.Context, data model.DataInfoShopsCrawled) error
+	InsertAllShopsInfoByQueue(ctx context.Context, data model.DataInfoShop) error
 }
 
 func NewPGRepo(db *mongo.Database) CategoryRepoInterface {
@@ -46,12 +47,23 @@ func (r *CategoryRepo) InsertAllShopsByCate(ctx context.Context, data model.Data
 	return nil
 }
 
-func (r *CategoryRepo) InsertAllShopsInfo(ctx context.Context, data model.DataInfoShopCrawled) error {
+func (r *CategoryRepo) InsertAllShopsInfo(ctx context.Context, data model.DataInfoShopsCrawled) error {
 	var rs []interface{}
-	for _, shopinfo := range data.DataInfoShop {
-		rs = append(rs, shopinfo.DataInfoShop)
+	for _, shopinfo := range data.DataInfoShops {
+		rs = append(rs, shopinfo)
 	}
 	_, err := r.DB.Collection("shop-info").InsertMany(ctx, rs)
+	if err != nil {
+		log.Println("Co loi MongoDB.", err)
+		return err
+	}
+	return nil
+}
+
+func (r *CategoryRepo) InsertAllShopsInfoByQueue(ctx context.Context, data model.DataInfoShop) error {
+	var rs []interface{}
+	rs = append(rs, data)
+	_, err := r.DB.Collection("shop-info-by-queue").InsertMany(ctx, rs)
 	if err != nil {
 		log.Println("Co loi MongoDB.", err)
 		return err

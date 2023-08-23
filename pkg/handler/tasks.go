@@ -34,3 +34,18 @@ func (h *CategoryQueueHandlers) HandleJsonCateDeliveryTask(ctx context.Context, 
 	return nil
 
 }
+
+func (h *CategoryQueueHandlers) HandleJsonShopDetailsDeliveryTask(ctx context.Context, t *asynq.Task) error {
+	var p model.DataInfoShop
+	if err := json.Unmarshal(t.Payload(), &p); err != nil {
+		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
+	}
+	log.Printf("Sending Json to Yasuo: data=%s\n", p)
+
+	infoShop := p
+	if err := h.service.SaveShopsInfoByQueue(ctx, infoShop); err != nil {
+		return err
+	}
+	return nil
+
+}
