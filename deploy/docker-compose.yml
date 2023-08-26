@@ -1,9 +1,36 @@
-version: '3.8'
-
+version: '3'
 services:
-  mongodb:
-    image: mongo:6-jammy
+  yasoucrawler:
+    container_name: yasoucrawler
+    image: "yasoucrawler:0.0.1"
+    hostname: yasoucrawler.local
+    restart: always
+    depends_on:
+      - mongodb
     ports:
-      - '27017:27017'
+      - "8099:8099"
+    networks:
+      - deploy_meracrawler
+    volumes:
+      - ./.env:/app/.env
+
+  mongodb:
+    container_name: mongodb
+    image: mongo
     environment:
-      - MONGO_INITDB_DATABASE=shopee
+      - MONGODB_HOST=localhost
+      - MONGODB_DBNAME=shopee
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: [ "CMD-SHELL", "mongo --username ${MONGODB_USER} --password ${MONGODB_PASSWORD} --eval \"db.stats()\"" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      meracrawler:
+        ipv4_address: 172.16.238.10
+
+networks:
+  deploy_meracrawler:
+    external: true
