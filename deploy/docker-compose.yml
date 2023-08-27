@@ -23,13 +23,13 @@ services:
     ports:
       - "27017:27017"
     healthcheck:
-      test: [ "CMD-SHELL", "mongo --username ${MONGODB_USER} --password ${MONGODB_PASSWORD} --eval \"db.stats()\"" ]
+      test: [ "CMD", "docker-healthcheck" ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      meracrawler:
-        ipv4_address: 172.16.238.10
+      deploy_meracrawler:
+        ipv4_address: 172.16.238.12
 
 networks:
   deploy_meracrawler:
